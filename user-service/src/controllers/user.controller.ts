@@ -36,3 +36,38 @@ export const registerUser = asyncHandler(async (req, res): Promise<any> => {
     });
   }
 });
+
+export const loginUser = asyncHandler(async (req, res): Promise<any> => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "All fields are required",
+    });
+
+  const user = await User.findOne({ email });
+  if (!user)
+    return res.status(StatusCodes.NOT_FOUND).json({
+      message: "User Not Found",
+    });
+
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Invalid password",
+    });
+  }
+
+  const token = user.generateToken();
+
+  return res.status(StatusCodes.OK).json({
+    message: "Login successful",
+    user: {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      playlist: user.playList,
+      token,
+    },
+  });
+});
