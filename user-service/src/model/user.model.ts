@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import mongoose, { Document, Schema } from "mongoose";
 
 interface IUser extends Document {
@@ -6,6 +7,7 @@ interface IUser extends Document {
   password: string;
   role: "user" | "admin";
   playList: string[];
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>(
@@ -32,6 +34,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: ["user", "admin"],
+      default: "user",
       required: [true, "role is required"],
     },
     playList: {
@@ -41,5 +44,15 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true, strict: "throw" }
 );
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+userSchema.methods.comparePassword = async function (password: string) {
+  return await bcrypt.compare(password, this.password);
+};
 
 export const User = mongoose.model("User", userSchema);
