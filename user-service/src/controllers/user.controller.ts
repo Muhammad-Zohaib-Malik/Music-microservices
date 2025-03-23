@@ -4,7 +4,7 @@ import { User } from "../model/user.model.js";
 import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 
 export const registerUser = asyncHandler(async (req, res): Promise<void> => {
-  const { name, email, password } = req.body;
+  const { name, email, password,role } = req.body;
 
   if (!name || !email || !password) {
     res.status(StatusCodes.BAD_REQUEST).json({
@@ -17,6 +17,7 @@ export const registerUser = asyncHandler(async (req, res): Promise<void> => {
       name,
       email,
       password,
+      role
     });
 
     await newUser.save();
@@ -92,7 +93,7 @@ export const myProfile = asyncHandler(
     const user = req.user;
     res.status(StatusCodes.OK).json({
       success: true,
-      user: {
+      userDetails: {
         id: user?._id,
         name: user?.name,
         email: user?.email,
