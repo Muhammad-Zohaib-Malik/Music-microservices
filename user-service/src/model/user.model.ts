@@ -35,9 +35,8 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
-      default: "user",
-      required: [true, "role is required"],
+      default:"user",
+      required: true,
     },
     playList: {
       type: [String],
