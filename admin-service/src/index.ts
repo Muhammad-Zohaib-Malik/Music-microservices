@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import logger from "./utils/logger.js";
+import { initDB } from "./models/index.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
-  logger.info(`server is running at ${port}`);
+initDB().then(() => {
+  app.listen(port, () => {
+    logger.info(`server is running at ${port}`);
+  });
 });
