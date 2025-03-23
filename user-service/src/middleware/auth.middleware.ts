@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import jwt, { decode, JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser, User } from "../model/user.model.js";
 import { StatusCodes } from "http-status-codes";
 
