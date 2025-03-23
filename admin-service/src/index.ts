@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import logger from "./utils/logger.js";
 import { initDB } from "./models/index.js";
+import albumRoutes from "./routes/album.route.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+app.use("/api/v1", albumRoutes);
 
 initDB().then(() => {
   app.listen(port, () => {
