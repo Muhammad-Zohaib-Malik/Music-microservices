@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../model/user.model.js";
+import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 
 export const registerUser = asyncHandler(async (req, res): Promise<void> => {
   const { name, email, password } = req.body;
@@ -70,7 +71,7 @@ export const loginUser = asyncHandler(async (req, res): Promise<void> => {
 
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -85,3 +86,19 @@ export const loginUser = asyncHandler(async (req, res): Promise<void> => {
     },
   });
 });
+
+export const myProfile = asyncHandler(
+  async (req: AuthenticatedRequest, res) => {
+    const user = req.user;
+    res.status(StatusCodes.OK).json({
+      success: true,
+      user: {
+        id: user?._id,
+        name: user?.name,
+        email: user?.email,
+        role: user?.role,
+        playlist: user?.playList,
+      },
+    });
+  }
+);
