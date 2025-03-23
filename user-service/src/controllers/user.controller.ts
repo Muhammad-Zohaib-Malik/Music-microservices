@@ -102,3 +102,16 @@ export const myProfile = asyncHandler(
     });
   }
 );
+
+export const logout = asyncHandler(async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+});
