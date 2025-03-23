@@ -1,27 +1,25 @@
 import { NextFunction, Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt, { decode, JwtPayload } from "jsonwebtoken";
 import { IUser, User } from "../model/user.model.js";
+import { StatusCodes } from "http-status-codes";
 
 export interface AuthenticatedRequest extends Request {
   user?: IUser | null;
 }
 
-export const Auth = async (
+export const isAuth = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   try {
     const token =
-      req.cookies?.token || req.headers.authorization?.split(" ")[1];
+      req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
 
-    if (!token) {
-      res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ message: "No token provided" });
-      return;
-    }
+    if (!token)
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "No token found in cookies or headers",
+      });
 
     const decoded = jwt.verify(
       token,
@@ -29,23 +27,25 @@ export const Auth = async (
     ) as JwtPayload;
 
     if (!decoded || !decoded._id) {
-      res.status(StatusCodes.UNAUTHORIZED).json({ message: "Invalid token" });
-      return;
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: "Invalid token",
+      });
     }
 
     const userId = decoded._id;
 
     const user = await User.findById(userId).select("-password");
     if (!user) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: "User Not Found" });
-      return;
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: "User Not found",
+      });
     }
 
     req.user = user;
     next();
-  } catch (error: any) {
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Authentication failed", error: error.message });
+  } catch (error) {
+    res.status(403).json({
+      message: "Please Login",
+    });
   }
 };
