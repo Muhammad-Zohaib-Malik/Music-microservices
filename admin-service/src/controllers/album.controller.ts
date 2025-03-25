@@ -144,3 +144,58 @@ export const AddThumbnail = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const DeleteAlbum = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Check if album exists
+  const isAlbum = await sql`SELECT * FROM albums WHERE id = ${id}`;
+  if (isAlbum.length === 0) {
+    res.status(StatusCodes.NOT_FOUND).json({
+      message: "No album with this ID",
+    });
+    return;
+  }
+
+  try {
+    await sql`DELETE FROM songs WHERE album_id = ${id}`;
+
+    await sql`DELETE FROM albums WHERE id = ${id}`;
+
+    res.status(StatusCodes.OK).json({
+      message: "Album and associated songs deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("Error deleting album:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error deleting album",
+      error: error.message,
+    });
+  }
+});
+
+export const DeleteSong = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const song = await sql`SELECT * FROM songs WHERE id = ${id}`;
+  if (song.length === 0) {
+    res.status(StatusCodes.NOT_FOUND).json({
+      message: "No song found with this ID",
+    });
+    return;
+  }
+
+  try {
+    await sql`DELETE FROM songs WHERE id = ${id}`;
+
+    res.status(StatusCodes.OK).json({
+      message: "Song deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("Error deleting song:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Error deleting song",
+      error: error.message,
+    });
+  }
+});
